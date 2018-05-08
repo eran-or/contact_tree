@@ -1,21 +1,49 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
+import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css';
+import Tree from './Tree'
+import {contacts} from './lib/contacts'
 
 class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
-      </div>
-    );
+  
+  state = {
+    tree:[],
+    contactsByIds:{}
   }
+  
+  componentWillMount(){
+    const contactsByIds = {}
+    
+    function normalizer(contacts){
+       for(let c of contacts){
+        if(c.contacts){
+          normalizer(c.contacts)
+        }
+        
+        c.show = false
+        contactsByIds[c.id]=c
+      }
+    }
+
+    const contactsCopy = [...contacts]
+    normalizer(contactsCopy)
+     this.setState({tree:contactsCopy, contactsByIds})
+  }
+  
+  handleToggle = (id)=>{
+    this.setState((state=>{
+      state.contactsByIds[id].show = !state.contactsByIds[id].show
+      return Object.assign({},...state, ...state.contactsByIds, ...state.contactsByIds[id])
+    }))
+  }
+
+render() {
+  return (
+    <div className="app">
+      <Tree data={this.state.tree} handleToggle={this.handleToggle} />
+    </div>
+  );
+}
 }
 
 export default App;
